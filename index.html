@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cloud File Transfer (Drive A vs. Drive B)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { text-align: center; }
+    .cloud-container { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .cloud-box {
+      width: 45%;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #f9f9f9;
+    }
+    .status {
+      font-weight: bold;
+      padding: 5px;
+      text-align: center;
+    }
+    .status.connected {
+      background-color: #c8e6c9;
+      color: green;
+    }
+    .status.disconnected {
+      background-color: #ffcccb;
+      color: red;
+    }
+    .file-list {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+      padding: 10px;
+      background: white;
+    }
+    .buttons { display: flex; justify-content: space-between; margin-top: 10px; }
+    button { padding: 8px; cursor: pointer; border: none; border-radius: 3px; }
+    button.connect { background-color: blue; color: white; }
+    button.disconnect { background-color: red; color: white; }
+    button.up { background-color: orange; color: white; }
+    button.transfer {
+      background-color: green; color: white; width: 100%; margin-top: 10px;
+    }
+    #status-message { margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Cloud File Transfer (Drive A vs. Drive B)</h1>
+
+  <div class="cloud-container">
+    <!-- Google Drive A -->
+    <div class="cloud-box">
+      <h2>Google Drive A</h2>
+      <p id="gdriveA-status" class="status disconnected">Not Connected</p>
+      <div class="buttons">
+        <button id="connect-gdriveA" class="connect">Connect GDrive A</button>
+        <button id="disconnect-gdriveA" class="disconnect" disabled>Disconnect GDrive A</button>
+        <button id="gdriveA-up" class="up" disabled>Up</button>
+      </div>
+      <div class="file-list" id="gdriveA-files">No files found.</div>
+    </div>
+
+    <!-- Google Drive B -->
+    <div class="cloud-box">
+      <h2>Google Drive B</h2>
+      <p id="gdriveB-status" class="status disconnected">Not Connected</p>
+      <div class="buttons">
+        <button id="connect-gdriveB" class="connect">Connect GDrive B</button>
+        <button id="disconnect-gdriveB" class="disconnect" disabled>Disconnect GDrive B</button>
+        <button id="gdriveB-up" class="up" disabled>Up</button>
+      </div>
+      <div class="file-list" id="gdriveB-files">No files found.</div>
+    </div>
+  </div>
+
+  <button id="transfer-file" class="transfer" disabled>Transfer Selected Item</button>
+  <p id="status-message">Status: Waiting for user action...</p>
+
+  <script src="wasm_exec.js"></script>
+  <script>
+      // Load main.wasm and initialize renderer.js only after WebAssembly is ready
+      fetch('main.wasm')
+          .then(response => response.arrayBuffer())
+          .then(bytes => WebAssembly.compile(bytes))
+          .then(module => {
+              const go = new Go();
+              WebAssembly.instantiate(module, go.importObject).then((instance) => {
+                  go.run(instance);
+                  console.log("WebAssembly loaded successfully");
+
+                  // Dynamically load renderer.js after WebAssembly is ready
+                  const script = document.createElement('script');
+                  script.src = 'renderer.js';
+                  script.onload = () => console.log("renderer.js loaded successfully");
+                  script.onerror = (error) => console.error("Error loading renderer.js:", error);
+                  document.body.appendChild(script);
+              });
+          }).catch((error) => {
+              console.error("WebAssembly loading error:", error);
+          });
+  </script>
+</body>
+</html>
